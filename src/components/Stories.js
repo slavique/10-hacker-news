@@ -20,7 +20,7 @@ class Stories extends Component{
 	componentDidMount() {
 		this.getAllStories((err, response) => {
 			if (err) {
-				console.dir('ERROR: ' + err);
+				alert('ERROR: ' + err);
 				return
 			}
 			let updatedStories = Object.assign([], this.state.stories);
