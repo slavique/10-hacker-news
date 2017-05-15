@@ -6,10 +6,11 @@ import styles from './styles'
 
 class Stories extends Component{
 	constructor() {
-		super()
-		this.topStoriesURL = 'https://hacker-news.firebaseio.com/v0/topstories.json'
-		this.storyURL = 'https://hacker-news.firebaseio.com/v0/item/[id].json'
-		this.userURL = 'https://hacker-news.firebaseio.com/v0/user/[id].json'
+		super();
+		this.storiesToBeFetched = 10;
+		this.topStoriesURL = 'https://hacker-news.firebaseio.com/v0/topstories.json';
+		this.storyURL = 'https://hacker-news.firebaseio.com/v0/item/[id].json';
+		this.userURL = 'https://hacker-news.firebaseio.com/v0/user/[id].json';
 		this.state = {
 			isFetching: true,
 			stories: []
@@ -19,30 +20,30 @@ class Stories extends Component{
 	componentDidMount() {
 		this.getAllStories((err, response) => {
 			if (err) {
-				console.dir('ERROR: ' + err)
+				console.dir('ERROR: ' + err);
 				return
 			}
 			let updatedStories = Object.assign([], this.state.stories);
+			let storiesIDs = [];
 			for(let i = 0; i < 10; i++) {
-				let randomStoryID = response[Math.floor(Math.random() * response.length)]
-				updatedStories.push(randomStoryID)
+				let randomStoryID = response[Math.floor(Math.random() * response.length)];
+				storiesIDs.push(randomStoryID)
 			}
-			updatedStories.forEach((elem, index) => {
-				let storyURL = this.storyURL.replace('[id]', elem)
+			storiesIDs.forEach((elem, index) => {
+				let storyURL = this.storyURL.replace('[id]', elem);
 				Request.get(storyURL).then((story) => {
-					// console.log(JSON.stringify(story.body))
-					let time = new Date(story.body.time)
-					story.body.time = time.toLocaleDateString()
-					let userURL = this.userURL.replace('[id]', story.body.by)
+					let time = new Date(story.body.time);
+					story.body.time = time.toLocaleDateString();
+					let userURL = this.userURL.replace('[id]', story.body.by);
 					Request.get(userURL).then((user) => {
-						story.body.authorKarma = user.body.karma
-						updatedStories[index] = story.body
+						story.body.authorKarma = user.body.karma;
+						updatedStories.push(story.body);
 						updatedStories.sort((a, b) => {
 							return a.score - b.score
-						})
-						console.log('score: ' + story.body.score)
-						if (index == updatedStories.length -1) {
-							console.log('index: ' + index)
+						});
+						console.log('score: ' + story.body.score);
+						if (updatedStories.length == this.storiesToBeFetched) {
+							console.log('index: ' + index);
 							this.setState({
 								stories: updatedStories,
 								isFetching: false
@@ -61,7 +62,7 @@ class Stories extends Component{
 		.set("Accept", 'application/json')
 		.end((err, response) => {
 			if (err) {
-				callback(err, null)
+				callback(err, null);
 				return
 			}
 			callback(null, response.body)
@@ -69,18 +70,18 @@ class Stories extends Component{
 	}
 
 	render() {
-		const style = styles.stories
+		const style = styles.stories;
 		const listOfStories = this.state.stories.map((story, i) => {
 			return(
 				<li key={i}>
 					<Story story={story}/>
 				</li>
 			)
-		})
+		});
 		const stories = this.state.isFetching ? <p>Loading...</p> :
 						<div style={style.container}>
 							<ul style={style.storiesList}>{listOfStories}</ul>
-						</div>
+						</div>;
 
 		return(
 			<div>
